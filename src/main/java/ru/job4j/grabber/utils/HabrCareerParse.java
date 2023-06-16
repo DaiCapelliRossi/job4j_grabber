@@ -1,4 +1,4 @@
-package ru.job4j.grabber;
+package ru.job4j.grabber.utils;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -21,6 +21,7 @@ public class HabrCareerParse {
     private static final String PAGE_NUM = "?page=";
 
     public static void main(String[] args) throws IOException {
+        HabrCareerParse hbp = new HabrCareerParse();
         for (int i = 1; i < 6; i++) {
             Connection connection = Jsoup.connect(PAGE_LINK + PAGE_NUM + i);
             Document document = connection.get();
@@ -33,9 +34,28 @@ public class HabrCareerParse {
                 String link = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
                 DateTimeParser date = new HabrCareerDateTimeParser();
                 LocalDateTime vacancyDate = date.parse(String.format("%s", dateElement.attr("datetime")));
-                System.out.printf("%s %s %s%n", vacancyName, link, vacancyDate);
+
+                String descriptionElement;
+                try {
+                    descriptionElement = hbp.retrieveDescription(link);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                System.out.printf("%s %s %s%n" +
+                                "%n" +
+                                "%s%n" +
+                                "----------------------------------------------------------%n",
+                        vacancyName, link, vacancyDate, descriptionElement);
             });
         }
-
     }
+
+    private String retrieveDescription(String link) throws IOException {
+        Connection connection = Jsoup.connect(link);
+        Document document = connection.get();
+        Element descriptionElement = document.getElementsByClass("faded-content__container").first();
+        return descriptionElement.text();
+    }
+
 }
