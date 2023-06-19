@@ -70,7 +70,7 @@ public class HabrCareerParse implements Parse {
                     throw new RuntimeException(e);
                 }
 
-                Post post = new Post(vacancyName, pageLink, vacancyDate, descriptionElement);
+                Post post = new Post(0, vacancyName, pageLink, vacancyDate, descriptionElement);
                 listOfPosts.add(post);
                 post.setId(listOfPosts.indexOf(post));
             });
