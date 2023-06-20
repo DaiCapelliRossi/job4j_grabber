@@ -15,30 +15,13 @@ import java.util.List;
 
 public class HabrCareerParse implements Parse {
 
-    List<Post> listOfPosts = new ArrayList<>();
-
-    private static final String SOURCE_LINK = "https://career.habr.com";
-
-    private static final String PAGE_LINK = String.format("%s/vacancies/java_developer", SOURCE_LINK);
+    private static final String PAGE_LINK = "/vacancies/java_developer";
     private static final String PAGE_NUM = "?page=";
 
     private final DateTimeParser dateTimeParser;
 
     public HabrCareerParse(DateTimeParser dateTimeParser) {
         this.dateTimeParser = dateTimeParser;
-    }
-
-    public static void main(String[] args) throws IOException {
-        HabrCareerParse hbp = new HabrCareerParse(new HabrCareerDateTimeParser());
-
-        hbp.listOfPosts = hbp.list(PAGE_LINK + PAGE_NUM);
-
-        for (Post p : hbp.listOfPosts) {
-            System.out.printf("%d. %s %s %s%n" +
-                    "%n%s" +
-                    "%n---------------------------------------------------------------------------------------------%n",
-                    p.getId(), p.getTitle(), p.getLink(), p.getCreated(), p.getDescription());
-        }
     }
 
     private String retrieveDescription(String link) throws IOException {
@@ -51,8 +34,8 @@ public class HabrCareerParse implements Parse {
     @Override
     public List<Post> list(String link) throws IOException {
         List<Post> listOfPosts = new ArrayList<>();
-        for (int i = 1; i < 2; i++) {
-            Connection connection = Jsoup.connect(link + i);
+        for (int i = 1; i < 6; i++) {
+            Connection connection = Jsoup.connect(link + PAGE_LINK + PAGE_NUM + i);
             Document document = connection.get();
             Elements rows = document.select(".vacancy-card__inner");
             rows.forEach(row -> {
@@ -60,7 +43,7 @@ public class HabrCareerParse implements Parse {
                 Element linkElement = titleElement.child(0);
                 Element dateElement = row.select(".vacancy-card__date").first().child(0);
                 String vacancyName = titleElement.text();
-                String pageLink = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
+                String pageLink = String.format("%s%s", link, linkElement.attr("href"));
                 LocalDateTime vacancyDate = this.dateTimeParser.parse(String.format("%s", dateElement.attr("datetime")));
 
                 String descriptionElement;
@@ -75,8 +58,6 @@ public class HabrCareerParse implements Parse {
                 post.setId(listOfPosts.indexOf(post));
             });
         }
-
-
         return listOfPosts;
     }
 }

@@ -3,31 +3,12 @@ package ru.job4j.grabber.utils;
 import ru.job4j.grabber.Post;
 import ru.job4j.grabber.Store;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 public class PsqlStore implements Store {
-
-    public static void main(String[] args) throws SQLException, IOException {
-        try (InputStream in = PsqlStore.class.getClassLoader().getResourceAsStream("rabbit.properties")) {
-            Properties config = new Properties();
-            config.load(in);
-            PsqlStore psqlStore = new PsqlStore(config);
-            DateTimeParser dtp = new HabrCareerDateTimeParser();
-            Post post = new Post(0, "Java developer", "https://career.habr.com/vacancies/1000113345", dtp.parse("2023-06-15T17:39:19+03:00"),"Description: full-time remote Java developer");
-            psqlStore.save(post);
-            List<Post> posts = psqlStore.getAll();
-            for (Post p : posts) {
-                System.out.println(p);
-            }
-            Post post1 = psqlStore.findById(6);
-            System.out.println(post1);
-        }
-    }
 
     private Connection cnn;
 
@@ -96,7 +77,6 @@ public class PsqlStore implements Store {
                             resultSet.getString("text"));
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
